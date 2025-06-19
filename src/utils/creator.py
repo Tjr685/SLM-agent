@@ -25,29 +25,66 @@ async def main():
     options = AssistantCreateParams(
         name="MontyCloud Customer Support Bot",
         instructions="\n".join([
-            "You are a customer support bot for MontyCloud and you will mainly interact with Customer Success team.",
-            "You are tasked with automating the following actions so that they become self-serviceable:",
-            "1. Extend trial for a customer",
-            "2. Enable beta features for the customer",
+            "You are a comprehensive customer support bot for MontyCloud. You automate critical customer support workflows for the Customer Success team.",
             "",
-            "Operating instructions:",
-            "1. The customer will be identified by a valid email id.",
-            "2. Always validate the input before carrying out actions",
-            "3. You have access to the following tools: extend_trial, enable_beta_features and update_jira",
-            "4. Update JIRA with the status of the current task, every step of the way - from user request, tool calling, status of the tool action etc",
+            "CORE FUNCTIONS:",
+            "1. approve_signup - Approve and activate new customer signups",
+            "2. extend_trial - Extend trial duration for customers", 
+            "3. enable_beta_features - Enable specific MSP features for customers",
+            "4. upgrade_subscription - Convert subscription from standard to enterprise",
+            "5. update_jira - Log all actions for audit and traceability",
             "",
-            "Workflow:",
-            "1. Parse user intent and validate email format",
-            "2. Confirm action details with user before proceeding",
-            "3. Create JIRA ticket for traceability",
-            "4. Execute the requested action",
-            "5. Update JIRA with results",
-            "6. Provide feedback to user with JIRA ticket reference"
+            "WORKFLOW REQUIREMENTS:",
+            "• Always validate customer email format and subscription status",
+            "• Ask clarifying questions when request details are ambiguous, by natural language should be able to identify the date in any format given",
+            "• Confirm high-impact actions before execution",
+            "• Do not proceed with creation of Jira ticket until the customer confirms the data, ask a yes or no",
+            "• Each main function (approve_signup, extend_trial, enable_beta_features, upgrade_subscription) automatically creates its own JIRA ticket - DO NOT call update_jira separately",
+            "• Provide clear status updates with ticket references",
+            "",
+            "VALIDATION RULES:",
+            "• Email must contain @ symbol and valid domain",
+            "• Plan types: trial, standard, enterprise", 
+            "• Upgrade paths: trial→(standard|enterprise), standard→enterprise",
+            "• Dates support NATURAL LANGUAGE: Accept '20th June 2025', 'June 20, 2025', 'next month', 'in 30 days', etc. - NEVER ask for YYYY-MM-DD format",
+            "",
+            "INTERACTION STYLE:",
+            "• Be professional and helpful",
+            "• Use emojis for visual clarity (📧 for email, 🎫 for tickets, ✅ for success)",
+            "• Always provide next steps and expected timeline",
+            "• Handle natural language queries intelligently",
+            "• When users provide dates like '20th June 2025' or 'next month', accept them directly - DO NOT ask for YYYY-MM-DD format"
         ]),
         tools=[
             {
                 "type": "code_interpreter",
             },
+            FunctionToolParam(
+                type="function",
+                function=FunctionDefinition(
+                    name="approve_signup",
+                    description="Approve and activate new customer signup",
+                    parameters={
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Customer email address",
+                            },
+                            "company_name": {
+                                "type": "string", 
+                                "description": "Company name for the new customer",
+                            },
+                            "plan_type": {
+                                "type": "string",
+                                "description": "Initial plan type (trial, standard, enterprise)",
+                                "enum": ["trial", "standard", "enterprise"]
+                            },
+                        },
+                        "required": ["email", "company_name"],
+                    }
+                )
+            ),
             FunctionToolParam(
                 type="function",
                 function=FunctionDefinition(
@@ -62,7 +99,7 @@ async def main():
                             },
                             "end_date": {
                                 "type": "string",
-                                "description": "New trial end date (YYYY-MM-DD format)",
+                                "description": "New trial end date. Accepts natural language like '20th June 2025', 'June 20, 2025', 'next month', 'in 30 days'. Do NOT require YYYY-MM-DD format.",
                             },
                         },
                         "required": ["email", "end_date"],
@@ -94,6 +131,37 @@ async def main():
             FunctionToolParam(
                 type="function",
                 function=FunctionDefinition(
+                    name="upgrade_subscription",
+                    description="Upgrade customer subscription from current plan to target plan",
+                    parameters={
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Customer email address",
+                            },
+                            "current_plan": {
+                                "type": "string",
+                                "description": "Current subscription plan",
+                                "enum": ["trial", "standard", "enterprise"]
+                            },
+                            "target_plan": {
+                                "type": "string", 
+                                "description": "Target subscription plan",
+                                "enum": ["standard", "enterprise"]
+                            },
+                            "effective_date": {
+                                "type": "string",
+                                "description": "Effective date for upgrade. Accepts natural language like '20th June 2025', 'June 20, 2025', 'next month', 'in 30 days'. Do NOT require YYYY-MM-DD format.",
+                            },
+                        },
+                        "required": ["email", "current_plan", "target_plan", "effective_date"],
+                    }
+                )
+            ),
+            FunctionToolParam(
+                type="function",
+                function=FunctionDefinition(
                     name="update_jira",
                     description="Create or update JIRA ticket for tracking",
                     parameters={
@@ -101,7 +169,7 @@ async def main():
                         "properties": {
                             "action": {
                                 "type": "string",
-                                "description": "Action being performed (extend_trial, enable_beta_features)",
+                                "description": "Action being performed (approve_signup, extend_trial, enable_beta_features, upgrade_subscription)",
                             },
                             "email": {
                                 "type": "string",
