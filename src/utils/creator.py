@@ -32,15 +32,21 @@ async def main():
             "2. extend_trial - Extend trial duration for customers", 
             "3. enable_beta_features - Enable specific MSP features for customers",
             "4. upgrade_subscription - Convert subscription from standard to enterprise",
-            "5. update_jira - Log all actions for audit and traceability",
+            "5. get_customer_info - Query current subscription plan, trial dates, and customer details",
+            "6. update_jira - Log all actions for audit and traceability",
             "",
             "WORKFLOW REQUIREMENTS:",
             "• Always validate customer email format and subscription status",
             "• Ask clarifying questions when request details are ambiguous, by natural language should be able to identify the date in any format given",
-            "• Confirm high-impact actions before execution",
-            "• Do not proceed with creation of Jira ticket until the customer confirms the data, ask a yes or no",
+            "• BEFORE creating any JIRA ticket, ALWAYS:",
+            "  1. Fetch customer data from SLM API to verify customer exists",
+            "  2. Show the customer's current information (name, plan, end date, features)",
+            "  3. Show the requested action details",
+            "  4. Ask for explicit confirmation: 'Can I proceed with this information?'",
+            "• Do not proceed with creation of Jira ticket until the customer confirms the data, ask a yes or no or confirm or proceed",
             "• Each main function (approve_signup, extend_trial, enable_beta_features, upgrade_subscription) automatically creates its own JIRA ticket - DO NOT call update_jira separately",
             "• Provide clear status updates with ticket references",
+            "• if all tasks agent can perform is asked as a user query, do not mention jira ticket management or anything about jira"
             "",
             "VALIDATION RULES:",
             "• Email must contain @ symbol and valid domain",
@@ -156,6 +162,23 @@ async def main():
                             },
                         },
                         "required": ["email", "current_plan", "target_plan", "effective_date"],
+                    }
+                )
+            ),
+            FunctionToolParam(
+                type="function",
+                function=FunctionDefinition(
+                    name="get_customer_info",
+                    description="Query current subscription plan, trial dates, and customer details",
+                    parameters={
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Customer email address to lookup",
+                            },
+                        },
+                        "required": ["email"],
                     }
                 )
             ),

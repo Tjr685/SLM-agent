@@ -305,12 +305,12 @@ The ticket status has been updated to: **{status.title()}**"""
         except Exception as e:
             logger.error(f"Error getting JIRA comments: {e}")
             return "Please check the JIRA ticket for detailed comments and reasoning."
-    
     def send_teams_notification(self, message: str, issue_info: Dict[str, str], status_change: Dict[str, str]):
         """Send notification to Teams"""
         try:
             # Import here to avoid circular imports
             from teams_notifier import notify_teams_status_change
+            from bot import conversation_references
             
             # Send async notification
             import asyncio
@@ -319,15 +319,15 @@ The ticket status has been updated to: **{status.title()}**"""
                 loop = asyncio.get_event_loop()
                 if loop.is_running():
                     # If loop is running, schedule the task
-                    asyncio.create_task(notify_teams_status_change(issue_info, status_change))
+                    asyncio.create_task(notify_teams_status_change(issue_info, status_change, conversation_references))
                 else:
                     # If no loop running, run until complete
-                    loop.run_until_complete(notify_teams_status_change(issue_info, status_change))
+                    loop.run_until_complete(notify_teams_status_change(issue_info, status_change, conversation_references))
             except RuntimeError:
                 # Create new event loop if none exists
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                loop.run_until_complete(notify_teams_status_change(issue_info, status_change))
+                loop.run_until_complete(notify_teams_status_change(issue_info, status_change, conversation_references))
                 loop.close()
             
             logger.info(f"Sent Teams notification for ticket {issue_info.get('key', '')}")
