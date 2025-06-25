@@ -136,7 +136,7 @@ class JiraIntegration:
         
         Args:
             ticket_key: JIRA ticket key (e.g., CST-123)
-            status: New status (In Progress, Done, etc.)
+            status: New status (Approved, Rejected, etc.)
             comment: Optional comment to add
             
         Returns:
@@ -267,6 +267,7 @@ class JiraIntegration:
         except Exception as e:
             logger.error(f"Error getting ticket comments: {e}")
             return "Error retrieving comments from JIRA."
+        
     def _get_action_config(self, action: str) -> Dict[str, str]:
         """Get JIRA configuration for different actions"""
         action_configs = {

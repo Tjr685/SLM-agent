@@ -42,13 +42,15 @@ class JiraWebhookHandler:
             if not data:
                 logger.warning("Received empty webhook payload")
                 return jsonify({"error": "Empty payload"}), 400
-            
-            # Log the webhook event
+              # Log the webhook event
             logger.info(f"Received JIRA webhook: {data.get('webhookEvent', 'unknown')}")
             
             # Check if this is an issue update event
             webhook_event = data.get('webhookEvent')
-            if webhook_event != 'jira:issue_updated':
+            
+            # Accept any webhook event that has status change information
+            # This handles Jira's various webhook formats
+            if not webhook_event or (webhook_event != 'jira:issue_updated' and 'changelog' not in data):
                 logger.info(f"Ignoring webhook event: {webhook_event}")
                 return jsonify({"status": "ignored"}), 200
             
@@ -293,7 +295,8 @@ Status: Request denied"""
 🔄 **New Status**: {status.title()}
 🔗 **JIRA Link**: {ticket_url}
 
-The ticket status has been updated to: **{status.title()}**"""   
+The ticket status has been updated to: **{status.title()}**"""
+    
     def get_rejection_comments(self, ticket_key: str) -> str:
         """Get comments from JIRA ticket for rejection notifications"""
         try:
@@ -305,46 +308,21 @@ The ticket status has been updated to: **{status.title()}**"""
         except Exception as e:
             logger.error(f"Error getting JIRA comments: {e}")
             return "Please check the JIRA ticket for detailed comments and reasoning."
+    
     def send_teams_notification(self, message: str, issue_info: Dict[str, str], status_change: Dict[str, str]):
         """Send notification to Teams"""
-        try:
-            # Import here to avoid circular imports
-            from teams_notifier import notify_teams_status_change
-            from bot import conversation_references
-            
-            # Send async notification
-            import asyncio
-            try:
-                # Try to use existing event loop
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # If loop is running, schedule the task
-                    asyncio.create_task(notify_teams_status_change(issue_info, status_change, conversation_references))
-                else:
-                    # If no loop running, run until complete
-                    loop.run_until_complete(notify_teams_status_change(issue_info, status_change, conversation_references))
-            except RuntimeError:
-                # Create new event loop if none exists
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(notify_teams_status_change(issue_info, status_change, conversation_references))
-                loop.close()
-            
-            logger.info(f"Sent Teams notification for ticket {issue_info.get('key', '')}")
-            
-        except Exception as e:
-            logger.error(f"Error sending Teams notification: {e}")
-            # Enhanced fallback: print the formatted message clearly
-            print("=" * 80)
-            print("🔔 TEAMS NOTIFICATION (Status Change Alert):")
-            print("=" * 80)
-            print(message)
-            print("=" * 80)
-            print(f"📋 Raw Data:")
-            print(f"   Ticket: {issue_info.get('key', 'N/A')}")
-            print(f"   Status: {status_change.get('from_status', 'N/A')} → {status_change.get('to_status', 'N/A')}")            
-            print(f"   Customer: {issue_info.get('customer_email', 'N/A')}")
-            print("=" * 80)
+        # For simplicity, we'll just output to console directly first
+        print("\n" + "=" * 80)
+        print("🔔 JIRA STATUS CHANGE NOTIFICATION:")
+        print("=" * 80)
+        print(message)
+        print(f"\n📋 Details:")
+        print(f"   Ticket: {issue_info.get('key', 'N/A')}")
+        print(f"   Status: {status_change.get('from_status', 'N/A')} → {status_change.get('to_status', 'N/A')}")            
+        print(f"   Customer: {issue_info.get('customer_email', 'N/A')}")
+        print(f"   Action: {issue_info.get('action_type', 'N/A')}")
+        print("=" * 80)
+        logger.info(f"Status change notification for ticket {issue_info.get('key', '')}: {status_change.get('from_status', '')} → {status_change.get('to_status', '')}")
     
     def run(self, host='0.0.0.0', port=5000, debug=False):
         """Run the webhook server"""

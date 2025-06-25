@@ -22,6 +22,16 @@ from slm_api import SLMAPIClient
 # Setup logging
 logger = logging.getLogger(__name__)
 
+# Global conversation references storage
+# conversation_references = {}
+
+# def add_conversation_reference(activity):
+#     """Add conversation reference from activity"""
+#     conversation_reference = TurnContext.get_conversation_reference(activity)
+#     conversation_references[conversation_reference.user.id] = conversation_reference
+#     logger.info(f"Captured conversation reference for user: {conversation_reference.user.id}")
+#     logger.info(f"Conversation references now contains {len(conversation_references)} references")
+
 # Enhanced validation and confirmation functions
 def validate_email_format(email: str) -> tuple[bool, str]:
     """Enhanced email validation"""
@@ -113,6 +123,14 @@ bot_app = Application[TurnState](
         ai=AIOptions(planner=planner, enable_feedback_loop=True),
     )
 )
+
+# Add activity handler to capture conversation references but pass through to AI planner
+# @bot_app.activity("message")
+# async def capture_ref_and_pass_through(context: TurnContext, state: TurnState):
+#     # Store the conversation reference for proactive messaging
+#     add_conversation_reference(context.activity)
+#     # Return False to let the AI planner handle the turn
+#     return False
     
 @bot_app.ai.action("extend_trial")
 async def extend_trial(context: TurnContext, state: TurnState):
@@ -727,7 +745,7 @@ Please verify the email address is correct."""
 🔧 Enabled Features: {features_display}
 
 💡 Available Actions:
-- Trial Extension (for trial customers)
+- Trial Extension (for trial/standard customers)
 - Subscription Upgrade (for trial/standard customers)
 - Enable Beta Features (for all customers)"""
         
@@ -739,3 +757,6 @@ Please verify the email address is correct."""
 🚫 Error: {str(e)}
 
 Please try again or contact support."""
+
+# Note: JIRA updates are now handled via proactive messaging when webhooks are received
+# Users will receive notifications automatically when tickets are approved
