@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 SLM (Service Level Management) API Integration
 Mock APIs for customer validation and tenant management
@@ -18,9 +17,12 @@ class SLMAPIClient:
         """Initialize SLM API client"""
         self.base_url = base_url
         self.session = None
-          # Mock data for testing (will be replaced with real API calls)
+        
+        # Mock data for testing - all customers map to CUST001
         self.mock_customers = {
             "admin@acmecorp.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "standard",
                 "end_date": "2025-07-10",
                 "tenant": "acme-prod",
@@ -28,6 +30,8 @@ class SLMAPIClient:
                 "features": ["Copilot", "Multitenancy"]
             },
             "devadmin@acmecorp.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "enterprise",
                 "end_date": "2026-01-01",
                 "tenant": "acme-dev",
@@ -35,6 +39,8 @@ class SLMAPIClient:
                 "features": ["Copilot", "Terraform", "OrgOnboarding", "MAP"]
             },
             "admin@zenlabs.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "standard",
                 "end_date": "2025-06-28",
                 "tenant": "zenlabs-us",
@@ -42,6 +48,8 @@ class SLMAPIClient:
                 "features": []
             },
             "euadmin@zenlabs.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "enterprise",
                 "end_date": "2025-12-01",
                 "tenant": "zenlabs-eu",
@@ -49,6 +57,8 @@ class SLMAPIClient:
                 "features": ["Azure", "FBP", "MAP"]
             },
             "ops@nextgentech.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "enterprise",
                 "end_date": "2025-10-15",
                 "tenant": "nextgen-prod",
@@ -56,6 +66,8 @@ class SLMAPIClient:
                 "features": ["Multitenancy", "OrgOnboarding", "Terraform"]
             },
             "qa@nextgentech.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "standard",
                 "end_date": "2025-08-15",
                 "tenant": "nextgen-test",
@@ -63,6 +75,8 @@ class SLMAPIClient:
                 "features": ["Copilot"]
             },
             "admin@skyai.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "standard",
                 "end_date": "2025-07-30",
                 "tenant": "skyai",
@@ -70,6 +84,8 @@ class SLMAPIClient:
                 "features": ["FBP"]
             },
             "admin@orbitalsoft.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "enterprise",
                 "end_date": "2025-11-30",
                 "tenant": "orbital",
@@ -77,6 +93,8 @@ class SLMAPIClient:
                 "features": ["Copilot", "Azure", "MAP", "Terraform"]
             },
             "alpha@quanta.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "enterprise",
                 "end_date": "2025-12-31",
                 "tenant": "quanta-alpha",
@@ -84,6 +102,8 @@ class SLMAPIClient:
                 "features": ["Multitenancy", "OrgOnboarding"]
             },
             "beta@quanta.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "standard",
                 "end_date": "2025-08-01",
                 "tenant": "quanta-beta",
@@ -91,6 +111,8 @@ class SLMAPIClient:
                 "features": ["Copilot"]
             },
             "root@helios.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "enterprise",
                 "end_date": "2026-02-15",
                 "tenant": "helios-root",
@@ -98,6 +120,8 @@ class SLMAPIClient:
                 "features": ["Azure", "FBP", "MAP", "Terraform"]
             },
             "staging@helios.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "standard",
                 "end_date": "2025-09-10",
                 "tenant": "helios-staging",
@@ -105,6 +129,8 @@ class SLMAPIClient:
                 "features": []
             },
             "admin@wavecore.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "enterprise",
                 "end_date": "2025-12-05",
                 "tenant": "wavecore",
@@ -112,12 +138,17 @@ class SLMAPIClient:
                 "features": ["Copilot", "FBP", "Multitenancy"]
             },
             "prod@neuronx.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "standard",
                 "end_date": "2025-07-20",
                 "tenant": "neuronx-prod",
                 "customer": "NeuronX",
                 "features": ["OrgOnboarding"]
-            },            "labs@neuronx.com": {
+            },
+            "labs@neuronx.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "enterprise",
                 "end_date": "2025-11-01",
                 "tenant": "neuronx-labs",
@@ -126,6 +157,8 @@ class SLMAPIClient:
             },
             # Add some trial customers for testing trial extensions
             "trial@acmecorp.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "trial",
                 "end_date": "2025-07-01",
                 "tenant": "acme-trial",
@@ -133,6 +166,8 @@ class SLMAPIClient:
                 "features": ["Copilot"]
             },
             "trial@zenlabs.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "trial",
                 "end_date": "2025-06-25",
                 "tenant": "zenlabs-trial",
@@ -140,6 +175,8 @@ class SLMAPIClient:
                 "features": []
             },
             "trial@skyai.com": {
+                "customer_id": "CUST001",
+                "signup_date": "2024-01-01",
                 "plan": "trial",
                 "end_date": "2025-07-05",
                 "tenant": "skyai-trial",
@@ -163,40 +200,134 @@ class SLMAPIClient:
         if self.session:
             await self.session.close()
 
-    async def fetch_subscription_plan(self, email: str) -> Optional[Dict[str, Any]]:
+    async def get_customer(self, email: str) -> Optional[Dict[str, Any]]:
         """
-        Fetch subscription plan and end date for a customer
-        GET /subscription?email=<email>
+        Mock for GET /get-customer?email=<email>
+        Returns: {"CustomerID": "CUST001", "Name": "abc", "signup_date": "2024-01-01"}
         """
         try:
-            logger.info(f"Fetching subscription plan for: {email}")
+            logger.info(f"Mock GET /get-customer?email={email}")
             
-            # Mock implementation - replace with real API call
+            # Mock implementation for /get-customer endpoint
             if email in self.mock_customers:
                 customer_data = self.mock_customers[email]
                 result = {
-                    "plan": customer_data["plan"],
-                    "end_date": customer_data["end_date"]
+                    "CustomerID": "CUST001",  # Always use CUST001 for now
+                    "Name": customer_data["customer"],
+                    "signup_date": "2024-01-01"
                 }
-                logger.info(f"Found subscription: {result}")
+                logger.info(f"Found customer: {result}")
                 return result
             else:
                 logger.warning(f"Customer not found: {email}")
                 return None
                 
         except Exception as e:
-            logger.error(f"Error fetching subscription plan: {e}")
+            logger.error(f"Error fetching customer: {e}")
             return None
 
-    async def fetch_tenant_details(self, email: str) -> Optional[Dict[str, Any]]:
+    async def get_subscription_details(self, customer_id: str) -> Optional[Dict[str, Any]]:
         """
-        Fetch tenant details for a customer
-        GET /details?email=<email>
+        Mock for GET /get-subscription-details?customerid=<customerid>
+        Returns: {"plan": "enterprise", "start_date": "2024-12-01", "end_date": "2025-11-01"}
         """
         try:
-            logger.info(f"Fetching tenant details for: {email}")
+            logger.info(f"Mock GET /get-subscription-details?customerid={customer_id}")
             
-            # Mock implementation - replace with real API call
+            # Since we're using CUST001 for all customers, find the first customer in mock_customers
+            # In real implementation, this would be based on the actual customer_id
+            for email, customer_data in self.mock_customers.items():
+                if customer_id == "CUST001":  # Always match CUST001
+                    result = {
+                        "plan": customer_data["plan"],
+                        "start_date": "2024-12-01",  # Mock start date
+                        "end_date": customer_data["end_date"]
+                    }
+                    logger.info(f"Found subscription details: {result}")
+                    return result
+                break  # Only return first match since we're using fixed customer ID
+            
+            logger.warning(f"Subscription not found for customer ID: {customer_id}")
+            return None
+                
+        except Exception as e:
+            logger.error(f"Error fetching subscription details: {e}")
+            return None
+        
+
+    async def get_enabled_features(self, customer_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Mock for GET /get-enabled-features?customerid=<customerid>
+        Returns: {"tenant": "nextgen-prod", "customer": "NextGenTech", "features": ["Multitenancy", "Terraform"]}
+        """
+        try:
+            logger.info(f"Mock GET /get-enabled-features?customerid={customer_id}")
+            
+            # Since we're using CUST001 for all customers, find the first customer in mock_customers
+            # In real implementation, this would be based on the actual customer_id
+            for email, customer_data in self.mock_customers.items():
+                if customer_id == "CUST001":  # Always match CUST001
+                    result = {
+                        "tenant": customer_data["tenant"],
+                        "customer": customer_data["customer"],
+                        "features": customer_data["features"]
+                    }
+                    logger.info(f"Found enabled features: {result}")
+                    return result
+                break  # Only return first match since we're using fixed customer ID
+            
+            logger.warning(f"Features not found for customer ID: {customer_id}")
+            return None
+                
+        except Exception as e:
+            logger.error(f"Error fetching enabled features: {e}")
+            return None
+        
+
+    async def fetch_subscription_plan(self, email: str) -> Optional[Dict[str, Any]]:
+        """
+        Wrapper that uses the new endpoint structure
+        """
+        try:
+            # Step 1: Get customer info
+            customer = await self.get_customer(email)
+            if not customer:
+                return None
+            
+            # Step 2: Get subscription details using customer ID
+            # Pass the original email so we can find the right customer data
+            subscription = await self.get_subscription_details_by_email(email)
+            return subscription
+                
+        except Exception as e:
+            logger.error(f"Error fetching subscription plan: {e}")
+            return None
+        
+
+    async def get_subscription_details_by_email(self, email: str) -> Optional[Dict[str, Any]]:
+        """
+        Helper function to get subscription details by email (for mock purposes)
+        """
+        try:
+            if email in self.mock_customers:
+                customer_data = self.mock_customers[email]
+                result = {
+                    "plan": customer_data["plan"],
+                    "start_date": "2024-12-01",  # Mock start date
+                    "end_date": customer_data["end_date"]
+                }
+                return result
+            return None
+        except Exception as e:
+            logger.error(f"Error fetching subscription by email: {e}")
+            return None
+        
+
+    async def get_enabled_features_by_email(self, email: str) -> Optional[Dict[str, Any]]:
+        """
+        Helper function to get enabled features by email (for mock purposes)
+        """
+        try:
             if email in self.mock_customers:
                 customer_data = self.mock_customers[email]
                 result = {
@@ -204,15 +335,12 @@ class SLMAPIClient:
                     "customer": customer_data["customer"],
                     "features": customer_data["features"]
                 }
-                logger.info(f"Found tenant details: {result}")
                 return result
-            else:
-                logger.warning(f"Tenant not found: {email}")
-                return None
-                
-        except Exception as e:
-            logger.error(f"Error fetching tenant details: {e}")
             return None
+        except Exception as e:
+            logger.error(f"Error fetching features by email: {e}")
+            return None
+        
 
     async def validate_customer(self, email: str, action_type: str) -> Dict[str, Any]:
         """
@@ -223,7 +351,7 @@ class SLMAPIClient:
             
             # Fetch basic customer info
             subscription = await self.fetch_subscription_plan(email)
-            tenant_details = await self.fetch_tenant_details(email)
+            tenant_details = await self.get_enabled_features_by_email(email)
             
             if not subscription or not tenant_details:
                 return {

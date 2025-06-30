@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional
 from dataclasses import asdict
 
 from botbuilder.core import MemoryStorage, TurnContext
+from botbuilder.schema import ConversationReference
 from teams import Application, ApplicationOptions, TeamsAdapter
 from teams.ai import AIOptions
 from teams.ai.planners import AssistantsPlanner, OpenAIAssistantsOptions, AzureOpenAIAssistantsOptions
@@ -16,21 +17,13 @@ from teams.feedback_loop_data import FeedbackLoopData
 from config import Config
 from jira_integration import JiraIntegration, create_support_ticket, update_support_ticket
 from utils.date_parser import parse_natural_date, validate_future_date
-# from teams_notifier import initialize_teams_notifier  # Commented out to fix circular import
+
 from slm_api import SLMAPIClient
+from teams_notifier import store_conversation_reference
+
 
 # Setup logging
 logger = logging.getLogger(__name__)
-
-# Global conversation references storage
-# conversation_references = {}
-
-# def add_conversation_reference(activity):
-#     """Add conversation reference from activity"""
-#     conversation_reference = TurnContext.get_conversation_reference(activity)
-#     conversation_references[conversation_reference.user.id] = conversation_reference
-#     logger.info(f"Captured conversation reference for user: {conversation_reference.user.id}")
-#     logger.info(f"Conversation references now contains {len(conversation_references)} references")
 
 # Enhanced validation and confirmation functions
 def validate_email_format(email: str) -> tuple[bool, str]:
@@ -123,14 +116,6 @@ bot_app = Application[TurnState](
         ai=AIOptions(planner=planner, enable_feedback_loop=True),
     )
 )
-
-# Add activity handler to capture conversation references but pass through to AI planner
-# @bot_app.activity("message")
-# async def capture_ref_and_pass_through(context: TurnContext, state: TurnState):
-#     # Store the conversation reference for proactive messaging
-#     add_conversation_reference(context.activity)
-#     # Return False to let the AI planner handle the turn
-#     return False
     
 @bot_app.ai.action("extend_trial")
 async def extend_trial(context: TurnContext, state: TurnState):
@@ -615,6 +600,12 @@ async def process_confirmed_action(context: TurnContext, state: TurnState):
             )
             
             if success:
+                # Storing the conversation reference for proactive notifications
+                store_conversation_reference(
+                    ticket_key,
+                    TurnContext.get_conversation_reference(context.activity),
+                    context.activity.from_property.id
+                )
                 # Show both original input and parsed date if different
                 date_display = pending_action["end_date"]
                 if pending_action.get("original_input", "").lower() != pending_action["end_date"]:
@@ -705,7 +696,7 @@ async def get_customer_info(context: TurnContext, state: TurnState):
         # Query SLM APIs to get customer information
         async with SLMAPIClient() as slm_client:
             subscription = await slm_client.fetch_subscription_plan(email)
-            tenant_details = await slm_client.fetch_tenant_details(email)
+            tenant_details = await slm_client.get_enabled_features_by_email(email)
         
         if not subscription or not tenant_details:
             return f"""❌ Customer Not Found

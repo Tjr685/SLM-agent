@@ -45,13 +45,14 @@ async def main():
             "  4. Ask for explicit confirmation: 'Can I proceed with this information?'",
             "• Do not proceed with creation of Jira ticket until the customer confirms the data, ask a yes or no or confirm or proceed",
             "• Each main function (approve_signup, extend_trial, enable_beta_features, upgrade_subscription) automatically creates its own JIRA ticket - DO NOT call update_jira separately",
+            "• If list of beta features are asked it is Multitenancy, Azure, Copilot, FBP, OrgOnboarding, MAP, Terraform",
             "• Provide clear status updates with ticket references",
             "• if all tasks agent can perform is asked as a user query, do not mention jira ticket management or anything about jira"
             "",
             "VALIDATION RULES:",
             "• Email must contain @ symbol and valid domain",
-            "• Plan types: trial, standard, enterprise", 
-            "• Upgrade paths: trial→(standard|enterprise), standard→enterprise",
+            "• Plan types: standard, enterprise", 
+            "• Upgrade paths: standard→enterprise",
             "• Dates support NATURAL LANGUAGE: Accept '20th June 2025', 'June 20, 2025', 'next month', 'in 30 days', etc. - NEVER ask for YYYY-MM-DD format",
             "",
             "INTERACTION STYLE:",
@@ -83,8 +84,8 @@ async def main():
                             },
                             "plan_type": {
                                 "type": "string",
-                                "description": "Initial plan type (trial, standard, enterprise)",
-                                "enum": ["trial", "standard", "enterprise"]
+                                "description": "Initial plan type ( standard, enterprise)",
+                                "enum": ["standard", "enterprise"]
                             },
                         },
                         "required": ["email", "company_name"],
@@ -149,7 +150,7 @@ async def main():
                             "current_plan": {
                                 "type": "string",
                                 "description": "Current subscription plan",
-                                "enum": ["trial", "standard", "enterprise"]
+                                "enum": ["standard", "enterprise"]
                             },
                             "target_plan": {
                                 "type": "string", 
